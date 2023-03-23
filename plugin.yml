@@ -1,0 +1,15 @@
+name: Purity
+main: me.BerylliumOranges.main.PluginMain
+version: 1.3
+api-version: 1.19
+commands:
+   getitems:
+     description: Gets all the Purity plugin's items.
+     aliases:
+     permission:
+     usage: /<command>
+   checkitem:
+     description: testing only.
+     aliases:
+     permission:
+     usage: /<command>
