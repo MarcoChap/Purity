@@ -20,7 +20,6 @@ public class InventoryListener implements Listener {
 	public InventoryListener() {
 		PluginMain.getInstance().getServer().getPluginManager().registerEvents(this, PluginMain.getInstance());
 	}
-
 	@EventHandler
 	public void rightClickAnvil(PlayerInteractEvent e) {
 		if (e.getAction().equals(Action.RIGHT_CLICK_BLOCK)) {

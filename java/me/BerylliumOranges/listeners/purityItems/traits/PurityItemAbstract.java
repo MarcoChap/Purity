@@ -2,7 +2,6 @@ package me.BerylliumOranges.listeners.purityItems.traits;
 
 import java.util.ArrayList;
 
-import org.bukkit.Bukkit;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
@@ -71,10 +70,12 @@ public abstract class PurityItemAbstract implements Listener {
 	public static void tick() {
 		for (int i = effectedEntities.size() - 1; i >= 0; i--) {
 			PotionTraitKey p = effectedEntities.get(i);
-			p.getActivePotionRunnable().run();
+			if (p.getActivePotionRunnable() != null) {
+				p.getActivePotionRunnable().run();
+			}
 			if (p.setTicksLeft(p.getTicksLeft() - 1) <= 0) {
 				effectedEntities.remove(p);
-				if (p.getActivePotionRunnable() != null)
+				if (p.getActivePotionRunnable() != null && p.getActivePotionRunnable().getTaskId() != -1)
 					p.getActivePotionRunnable().cancel();
 			}
 		}
@@ -109,7 +110,9 @@ public abstract class PurityItemAbstract implements Listener {
 		for (PotionTraitKey p : effectedEntities) {
 
 			if (p.getOwner().equals(liv) && p.getTrait().getTraitIdentifier().equals(traitID)) {
-				Bukkit.broadcastMessage("CHECKING: " + p.getTrait().getName() + " equals " + p.getTrait().getTraitIdentifier().equals(traitID));
+				// Bukkit.broadcastMessage("CHECKING: " + p.getTrait().getName()
+				// + " equals " +
+				// p.getTrait().getTraitIdentifier().equals(traitID));
 				return true;
 			}
 		}

@@ -1,10 +1,14 @@
 package me.BerylliumOranges.customEvents;
 
+import java.util.ArrayList;
+
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.entity.EntityEvent;
 import org.bukkit.inventory.ItemStack;
+
+import me.BerylliumOranges.listeners.purityItems.traits.PurityItemAbstract;
 
 public class ItemCombineEvent extends EntityEvent implements Cancellable {
 	ItemStack main;
@@ -13,15 +17,17 @@ public class ItemCombineEvent extends EntityEvent implements Cancellable {
 	int xpLevelCost;
 	boolean isCancelled;
 	LivingEntity entity;
+	ArrayList<PurityItemAbstract> traits;
 	private static final HandlerList handlers = new HandlerList();
 
-	public ItemCombineEvent(LivingEntity entity, ItemStack main, ItemStack material, ItemStack result,
-			int xpLevelCost) {
+	public ItemCombineEvent(LivingEntity entity, ItemStack main, ItemStack material, ItemStack result, int xpLevelCost,
+			ArrayList<PurityItemAbstract> traits) {
 		super(entity);
 		this.main = main;
 		this.material = material;
 		this.result = result;
 		this.xpLevelCost = xpLevelCost;
+		this.traits = traits;
 	}
 
 	@Override
@@ -79,6 +85,14 @@ public class ItemCombineEvent extends EntityEvent implements Cancellable {
 
 	public void setXpLevelCost(int xpLevelCost) {
 		this.xpLevelCost = xpLevelCost;
+	}
+
+	public ArrayList<PurityItemAbstract> getTraits() {
+		return traits;
+	}
+
+	public void setTraits(ArrayList<PurityItemAbstract> traits) {
+		this.traits = traits;
 	}
 
 }

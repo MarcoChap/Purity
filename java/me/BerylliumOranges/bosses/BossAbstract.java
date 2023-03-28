@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 
+import me.BerylliumOranges.listeners.purityItems.traits.Goblin;
 import me.BerylliumOranges.listeners.purityItems.traits.PurityItemAbstract;
 import me.BerylliumOranges.main.DirectoryTools;
 import me.BerylliumOranges.main.PluginMain;
@@ -142,12 +143,15 @@ public abstract class BossAbstract implements Listener {
 		double multiplier = Math.pow(participants.size(), -0.2);
 		for (Player p : participants) {
 			for (ItemStack item : drops) {
+				double temp = multiplier;
+				if (PurityItemAbstract.hasPotionTrait(p, Goblin.TRAIT_ID)) {
+					temp *= 1 + (Goblin.LOOT_BONUS / 100.0);
+				}
 				ItemStack copy = item.clone();
-				copy.setAmount((int) ((1 + copy.getAmount()) * (Math.random() * multiplier)));
-
-				Bukkit.broadcastMessage("amount is: " + copy.getAmount());
+				copy.setAmount((int) ((1 + copy.getAmount()) * (Math.random() * temp)));
 
 				p.getInventory().addItem(copy);
+				p.giveExp(100);
 			}
 		}
 	}

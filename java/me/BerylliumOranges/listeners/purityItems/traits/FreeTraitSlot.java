@@ -3,6 +3,7 @@ package me.BerylliumOranges.listeners.purityItems.traits;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
@@ -38,17 +39,22 @@ public class FreeTraitSlot extends PurityItemAbstract {
 	}
 
 	public ArrayList<String> getPotionTraitDescription() {
-		return new ArrayList<>(Arrays.asList(ChatColor.GOLD + "All " + ChatColor.YELLOW + "traits" + ChatColor.GOLD + " apply an extra time "
-				+ ChatColor.GOLD + ItemBuilder.getTimeInMinutes(getPotionSeconds())));
+		return new ArrayList<>(Arrays.asList(ChatColor.GRAY + "All " + ChatColor.YELLOW + "traits" + ChatColor.GRAY + " apply an extra time "
+				+ ChatColor.GRAY + ItemBuilder.getTimeInMinutes(getPotionSeconds())));
 	}
 
 	public ArrayList<String> getToolTraitDescription() {
-		return new ArrayList<>(Arrays.asList(ChatColor.GRAY + "has space for a trait"));
+		return new ArrayList<>(Arrays.asList(ChatColor.GRAY + "This item has space for another trait"));
 	}
 
 	@Override
 	public BukkitRunnable getActivePotionRunnable(LivingEntity consumer) {
-		return null;
+		return new BukkitRunnable() {
+
+			@Override
+			public void run() {
+			}
+		};
 	}
 
 	@Override

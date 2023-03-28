@@ -11,8 +11,8 @@ import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.attribute.AttributeModifier.Operation;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -21,7 +21,7 @@ import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionType;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import io.papermc.paper.event.entity.EntityMoveEvent;
+import me.BerylliumOranges.customEvents.BossTickEvent;
 import me.BerylliumOranges.listeners.purityItems.ItemBuilder;
 import net.md_5.bungee.api.ChatColor;
 
@@ -111,9 +111,8 @@ public class Hydrophobia extends PurityItemAbstract {
 	}
 
 	@EventHandler
-	public void onMove(PlayerMoveEvent e) {
-		if (e.getPlayer() instanceof LivingEntity) {
-			LivingEntity liv = (LivingEntity) e.getPlayer();
+	public void onTick(BossTickEvent e) {
+		for (Player liv : Bukkit.getServer().getOnlinePlayers()) {
 			if (liv.getLocation().getBlock().getType().equals(Material.WATER)) {
 				int count = ItemBuilder.sumOfTraitInEquipment(liv, getTraitIdentifier(), true);
 				liv.damage(count * 2);
@@ -124,7 +123,7 @@ public class Hydrophobia extends PurityItemAbstract {
 							loc.add(0, 1, 0);
 						}
 					}
-					e.getPlayer().teleport(loc);
+					liv.teleport(loc);
 				}
 			}
 		}

@@ -2,13 +2,17 @@ package me.BerylliumOranges.bosses;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
-import org.bukkit.attribute.Attribute;
+import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.boss.BarColor;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -22,11 +26,12 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.Vector;
 
 import me.BerylliumOranges.attacks.VexAttackPattern;
 import me.BerylliumOranges.customEvents.BossTickEvent;
 import me.BerylliumOranges.listeners.purityItems.traits.Bark;
-import me.BerylliumOranges.listeners.purityItems.traits.FreeTraitSlot;
 import me.BerylliumOranges.listeners.purityItems.traits.PurityItemAbstract;
 import me.BerylliumOranges.main.PluginMain;
 import me.BerylliumOranges.misc.BossBarListener;
@@ -59,9 +64,8 @@ public class Treant extends BossAbstract {
 		return item;
 	}
 
-	public static final List<ItemStack> DROPS = Arrays.asList(PurityItemAbstract.getTraitInstance(FreeTraitSlot.TRAIT_ID).getPotionItem(),
-			PurityItemAbstract.getTraitInstance(Bark.TRAIT_ID).getToolItem(), new ItemStack(Material.GOLD_INGOT, 4),
-			new ItemStack(Material.DIAMOND, 1));
+	public static final List<ItemStack> DROPS = Arrays.asList(PurityItemAbstract.getTraitInstance(Bark.TRAIT_ID).getToolItem(),
+			new ItemStack(Material.GOLD_INGOT, 4), new ItemStack(Material.DIAMOND, 1));
 
 	@Override
 	public List<ItemStack> getDrops() {
@@ -97,14 +101,14 @@ public class Treant extends BossAbstract {
 		Zombie z = loc.getWorld().spawn(loc, Zombie.class);
 		loc.getWorld().playSound(loc, Sound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR, 2, 0);
 		bosses.add(z);
-		z.setMaxHealth(60);
-		z.setHealth(60);
+		z.setMaxHealth(200);
+		z.setHealth(200);
 
-		z.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 99999, 2));
-		z.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 99999, 2));
+		z.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 99999, 1));
+		z.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, 99999, 1));
 
 		z.setAdult();
-		z.setCustomName(ChatColor.DARK_GREEN + "Declan Oakly");
+		z.setCustomName(ChatColor.DARK_GREEN + "SYDNEY BRANCHY, GOD OF PESTILLANCE");
 		new BossBarListener(z, BarColor.GREEN, 0);
 
 		String s = mat.toString();
@@ -141,6 +145,80 @@ public class Treant extends BossAbstract {
 		return z;
 	}
 
+	boolean replacingGround = false;
+
+	public void replaceGround(Location center) {
+		replacingGround = true;
+		int radius = 20; // 2 blocks in each direction to make a 5x5 area
+		Material newMaterial = Material.RED_CONCRETE;
+		Map<Location, Material> originalBlocks = new HashMap<>();
+
+		int last = 0;
+		for (double x = 0; x < 15; x++) {
+			double i = 0;
+			do {
+
+				double angle = (Math.PI * 2) * (i / x);
+				Vector vec;
+				if (i < 0)
+					vec = new Vector(0, 0, 0);
+				else
+					vec = new Vector(Math.cos(angle) * x, 0, Math.sin(angle) * x);
+				Location currentLocation = center.clone().add(0, -5, 0);
+				Block block = currentLocation.add(vec).getBlock();
+
+				// Find the surface block
+				while (!block.getRelative(BlockFace.UP).getType().isAir()) {
+					block = currentLocation.add(0, 1, 0).getBlock();
+				}
+
+				// Save the original block type
+				originalBlocks.put(block.getLocation(), block.getType());
+
+				// Calculate the delay based on the distance from the center
+				int delay = (int) Math.abs(x);
+
+				// Schedule a delayed task to replace the block
+				new BukkitRunnable() {
+					@Override
+					public void run() {
+						currentLocation.getBlock().setType(newMaterial);
+					}
+				}.runTaskLater(PluginMain.getInstance(), delay * 1L);
+				i += 0.1;
+			} while (i < x);
+		}
+
+		// Schedule a delayed task to revert blocks and deal damage to players
+		// after 40 ticks
+		new BukkitRunnable() {
+
+			@Override
+			public void run() {
+				World world = center.getWorld();
+				for (Map.Entry<Location, Material> entry : originalBlocks.entrySet()) {
+					Location loc = entry.getKey();
+					Material originalMaterial = entry.getValue();
+
+					// Revert the block to its original type
+					loc.getBlock().setType(originalMaterial);
+
+					// Check if there is a player on the block and deal 20
+					// damage
+					for (Player player : world.getPlayers()) {
+						Location playerLocation = player.getLocation();
+						if (playerLocation.getBlockX() == loc.getBlockX() && playerLocation.getBlockY() - 1 == loc.getBlockY()
+								&& playerLocation.getBlockZ() == loc.getBlockZ()) {
+							player.damage(20);
+						}
+					}
+				}
+				replacingGround = false;
+			}
+
+		}.runTaskLater(PluginMain.getInstance(), 40L + 2L * (radius * 2 + 1));
+	}
+
 	@EventHandler
 	public void onDeath(EntityDeathEvent e) {
 
@@ -173,6 +251,13 @@ public class Treant extends BossAbstract {
 		for (VexAttackPattern v : vexes) {
 			v.tick();
 		}
+
+		if (!replacingGround) {
+			if (ticksAlive % 20 == 0 && Math.random() > 0.5) {
+				replaceGround(bosses.get((int) (bosses.size() * Math.random())).getLocation().subtract(0, 1, 0));
+			}
+		}
+
 		boolean allDead = true;
 		for (LivingEntity d : bosses) {
 			if (!d.isDead())

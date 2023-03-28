@@ -18,6 +18,7 @@ public class TraitAppliedEvent extends EntityEvent implements Cancellable {
 
 	public TraitAppliedEvent(LivingEntity entity, PurityItemAbstract trait, ItemStack item, int timesToApply) {
 		super(entity);
+		this.entity = entity;
 		this.trait = trait;
 		this.item = item;
 		this.timesToApply = timesToApply;

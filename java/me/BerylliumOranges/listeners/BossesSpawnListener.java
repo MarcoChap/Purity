@@ -1,21 +1,25 @@
 package me.BerylliumOranges.listeners;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.server.PluginDisableEvent;
-import org.bukkit.event.server.PluginEnableEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
 import me.BerylliumOranges.bosses.BossAbstract;
+import me.BerylliumOranges.bosses.CoalGoblin;
 import me.BerylliumOranges.bosses.Treant;
+import me.BerylliumOranges.listeners.purityItems.ItemBuilder;
+import me.BerylliumOranges.listeners.purityItems.traits.Goblin;
 import me.BerylliumOranges.main.PluginMain;
 
 public class BossesSpawnListener implements Listener {
@@ -26,7 +30,7 @@ public class BossesSpawnListener implements Listener {
 
 	@EventHandler
 	public void onReload(PluginDisableEvent e) {
-		Bukkit.broadcastMessage("Marco is reloading the server because he is annoying... Expect lag");
+		Bukkit.broadcastMessage("Reloading Server...");
 	}
 
 	@EventHandler
@@ -36,6 +40,23 @@ public class BossesSpawnListener implements Listener {
 				boss.despawnAll();
 			}
 			BossAbstract.bossInstances.clear();
+		}
+	}
+
+	public static final double COAL_GOBLIN_SPAWN_CHANCE = 0.008;
+
+	@EventHandler
+	public void onBlockBreak(BlockBreakEvent e) {
+		double spawnMultiplier = Math.pow(1 - (Goblin.GOBLIN_SPAWN_CHANCE_BONUS / 100.0),
+				ItemBuilder.sumOfTraitInEquipment(e.getPlayer(), Goblin.TRAIT_ID, true));
+
+		if (e.getBlock().getType().equals(Material.COAL_ORE) || e.getBlock().getType().equals(Material.DEEPSLATE_COAL_ORE)) {
+			if (e.isDropItems()) {
+				if (Math.random() * spawnMultiplier < COAL_GOBLIN_SPAWN_CHANCE) {
+					CoalGoblin g = new CoalGoblin();
+					g.spawnBoss(e.getBlock().getLocation().add(0.5, 0, 0.5));
+				}
+			}
 		}
 	}
 
@@ -68,13 +89,13 @@ public class BossesSpawnListener implements Listener {
 		if (e.getAction().equals(Action.RIGHT_CLICK_BLOCK)) {
 			if (e.getItem() != null && e.getItem().hasItemMeta()) {
 				String localName = e.getItem().getItemMeta().getLocalizedName();
-
 				for (Class<BossAbstract> boss : BossAbstract.bossClasses) {
 					try {
 						String n = (String) boss.getField("NAME").get(null);
 						if (n.equals(localName)) {
 							BossAbstract b = boss.newInstance();
 							b.spawnBoss(e.getClickedBlock().getLocation().add(e.getBlockFace().getDirection()));
+							e.getItem().setAmount(e.getItem().getAmount() - 1);
 							e.setCancelled(true);
 							return;
 						}

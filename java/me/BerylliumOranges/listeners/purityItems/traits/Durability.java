@@ -1,18 +1,12 @@
 package me.BerylliumOranges.listeners.purityItems.traits;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.UUID;
 
 import org.bukkit.Material;
-import org.bukkit.attribute.Attribute;
-import org.bukkit.attribute.AttributeModifier;
-import org.bukkit.attribute.AttributeModifier.Operation;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.entity.EntityRegainHealthEvent;
-import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.event.player.PlayerItemDamageEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
@@ -37,7 +31,7 @@ public class Durability extends PurityItemAbstract {
 	}
 
 	public int getPotionSeconds() {
-		return 8 * 60;
+		return 20 * 60;
 	}
 
 	public static final String TRAIT_ID = "[Durability]";
@@ -47,12 +41,12 @@ public class Durability extends PurityItemAbstract {
 	}
 
 	public ArrayList<String> getPotionTraitDescription() {
-		return new ArrayList<>(
-				Arrays.asList(ChatColor.GRAY + "Your tools do not lose durability " + ItemBuilder.getTimeInMinutes(getPotionSeconds())));
+		return new ArrayList<>(Arrays.asList(ChatColor.GRAY + "Your tools do not lose " + ChatColor.AQUA + "durability " + ChatColor.GRAY
+				+ ItemBuilder.getTimeInMinutes(getPotionSeconds())));
 	}
 
 	public ArrayList<String> getToolTraitDescription() {
-		return new ArrayList<>(Arrays.asList(ChatColor.GRAY + "Tool is " + ChatColor.AQUA + "Unbreakable"));
+		return new ArrayList<>(Arrays.asList(ChatColor.GRAY + "Tool does not lose " + ChatColor.AQUA + "durability"));
 	}
 
 	@Override
@@ -93,12 +87,12 @@ public class Durability extends PurityItemAbstract {
 	}
 
 	@EventHandler
-	public void onHeal(EntityRegainHealthEvent e) {
-		if (e.getEntity() instanceof LivingEntity) {
-			LivingEntity liv = (LivingEntity) e.getEntity();
-			e.setAmount(e.getAmount() * (1 + TOOL_HEAL_BONUS * (ItemBuilder.sumOfTraitInEquipment(liv, getTraitIdentifier(), true)) / 100.0));
-			if (PurityItemAbstract.hasPotionTrait(liv, getTraitIdentifier()))
-				e.setAmount(e.getAmount() * (1 + POTION_HEAL_BONUS / 100.0));
+	public void onItemDamage(PlayerItemDamageEvent e) {
+		if (PurityItemAbstract.hasPotionTrait(e.getPlayer(), getTraitIdentifier())) {
+			e.setDamage(0);
+		} else if (ItemBuilder.sumOfTraitInItem(e.getItem(), TRAIT_ID) > 0) {
+			e.setDamage(0);
 		}
 	}
+
 }

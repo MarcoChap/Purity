@@ -3,7 +3,6 @@ package me.BerylliumOranges.listeners.purityItems.traits;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
@@ -53,7 +52,6 @@ public class RandomTrait extends PurityItemAbstract {
 
 			@Override
 			public void run() {
-				Bukkit.broadcastMessage("RUNNIN1111G rand0m traut");
 				for (int i = 0; i < 2; i++) {
 					ArrayList<PurityItemAbstract> possibleTraits = new ArrayList<PurityItemAbstract>();
 					for (PurityItemAbstract p : PurityItemAbstract.allPurityInstances) {
@@ -65,6 +63,8 @@ public class RandomTrait extends PurityItemAbstract {
 						break;
 					PurityItemAbstract p = possibleTraits.get((int) (possibleTraits.size() * Math.random()));
 					addPotionTrait(consumer, p);
+					consumer.sendMessage(
+							ChatColor.GREEN + "+" + p.getName() + " " + ChatColor.WHITE + ItemBuilder.getTimeInMinutes(p.getPotionSeconds()));
 				}
 			}
 		};
@@ -108,7 +108,7 @@ public class RandomTrait extends PurityItemAbstract {
 		LivingEntity liv = (LivingEntity) e.getPlayer();
 		for (int i = 0; i < EquipmentSlot.values().length; i++) {
 			ItemStack item = liv.getEquipment().getItem(EquipmentSlot.values()[i]);
-			if (item != null && item.hasItemMeta()) {
+			if (item != null && item.hasItemMeta() && !ItemBuilder.isTraitPotion(item)) {
 				replaceRandomTraits(liv, item);
 			}
 		}
@@ -117,12 +117,20 @@ public class RandomTrait extends PurityItemAbstract {
 	public static void replaceRandomTraits(LivingEntity liv, ItemStack item) {
 		ArrayList<PurityItemAbstract> traits = ItemBuilder.getAllItemTraits(item);
 		int count = ItemBuilder.sumOfTraitInItem(liv, item, TRAIT_ID);
-		for (int x = traits.size() - 1; x >= 0; x--) {
-			if (traits.get(x).getTraitIdentifier().equals(TRAIT_ID)) {
-				traits.remove(x);
+		if (count > 0) {
+			for (int x = traits.size() - 1; x >= 0; x--) {
+				if (traits.get(x).getTraitIdentifier().equals(TRAIT_ID)) {
+					traits.remove(x);
+				}
+			}
+			ArrayList<PurityItemAbstract> possibilities = new ArrayList<>();
+			for (PurityItemAbstract pu : PurityItemAbstract.allPurityInstances) {
+				if (item.getType().toString().toLowerCase().contains("pickaxe") || !pu.getTraitIdentifier().equals(Goblin.TRAIT_ID)) {
+					possibilities.add(pu);
+				}
 			}
 			for (int z = 0; z < count; z++) {
-				traits.add(PurityItemAbstract.allPurityInstances.get((int) (Math.random() * PurityItemAbstract.allPurityInstances.size())));
+				traits.add(possibilities.get((int) (Math.random() * possibilities.size())));
 			}
 			ItemBuilder.buildItem(item, traits);
 		}

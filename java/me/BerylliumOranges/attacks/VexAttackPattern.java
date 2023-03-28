@@ -71,7 +71,7 @@ public class VexAttackPattern extends AttackPatternAbstract {
 					if (e instanceof Breedable || e instanceof Player) {
 						LivingEntity liv = (LivingEntity) e;
 						liv.damage(7, vex);
-						liv.setNoDamageTicks(0);
+						liv.setNoDamageTicks(1);
 						loc.getWorld().playSound(loc, Sound.BLOCK_AZALEA_LEAVES_BREAK, 1, 1);
 					}
 				}

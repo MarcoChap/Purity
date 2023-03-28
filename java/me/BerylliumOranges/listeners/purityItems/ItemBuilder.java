@@ -31,15 +31,12 @@ import net.md_5.bungee.api.ChatColor;
 public class ItemBuilder {
 
 	public static ResultAndCost combineItems(@Nullable LivingEntity liv, ItemStack main, ItemStack material) {
-		Bukkit.broadcastMessage("I got here!!!");
 		if (main == null || !main.hasItemMeta() || material == null || !material.hasItemMeta()) {
 			return null;
 		}
-		Bukkit.broadcastMessage("I got here??");
 		ItemMeta meta = main.getItemMeta();
 
 		if (meta instanceof Damageable) {
-			Bukkit.broadcastMessage("I got here ok");
 			ArrayList<PurityItemAbstract> mainTraits = getAllItemTraits(main);
 			ArrayList<PurityItemAbstract> materialTraits = getAllItemTraits(material);
 			ArrayList<PurityItemAbstract> resultTraits = new ArrayList<>(mainTraits);
@@ -47,7 +44,6 @@ public class ItemBuilder {
 
 			int slotsToTake = materialTraits.size() - sumOfTraitInItem(material, FreeTraitSlot.TRAIT_ID);
 			int openTraitSlots = sumOfTraitInItem(main, FreeTraitSlot.TRAIT_ID);
-			Bukkit.broadcastMessage("I got here " + slotsToTake + ", open: " + openTraitSlots);
 			int cost = 0;
 			for (PurityItemAbstract p : materialTraits) {
 				if (p.isCurse())
@@ -56,7 +52,6 @@ public class ItemBuilder {
 			}
 
 			if (openTraitSlots - slotsToTake >= 0 && isTraitPotion(material)) {
-				Bukkit.broadcastMessage("I got here");
 				if (slotsToTake > 0)
 					for (int i = resultTraits.size() - 1; i >= 0; i--) {
 						if (resultTraits.get(i).getTraitIdentifier().equals(FreeTraitSlot.TRAIT_ID)) {
@@ -80,7 +75,7 @@ public class ItemBuilder {
 				result.setItemMeta(resultMeta);
 				ItemBuilder.buildItem(result, resultTraits);
 				int count = getAllItemTraits(result).size();
-				ItemCombineEvent e = new ItemCombineEvent(liv, main, material, result, count);
+				ItemCombineEvent e = new ItemCombineEvent(liv, main, material, result, count, resultTraits);
 				Bukkit.getPluginManager().callEvent(e);
 				return new ResultAndCost(result, cost);
 			}
@@ -239,7 +234,7 @@ public class ItemBuilder {
 	/** This method creates a TraitAppliedEvent **/
 	public static int sumOfTraitInItem(LivingEntity liv, ItemStack item, String traitID) {
 		int matches = sumOfTraitInItem(item, traitID);
-		TraitAppliedEvent e = new TraitAppliedEvent(liv, null, item, matches);
+		TraitAppliedEvent e = new TraitAppliedEvent(liv, PurityItemAbstract.getTraitInstance(traitID), item, matches);
 		if (matches > 0) {
 			Bukkit.getPluginManager().callEvent(e);
 		}

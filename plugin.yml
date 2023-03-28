@@ -13,3 +13,8 @@ commands:
      aliases:
      permission:
      usage: /<command>
+   potions:
+     description: Check what potions are still active.
+     aliases:
+     permission:
+     usage: /<command>

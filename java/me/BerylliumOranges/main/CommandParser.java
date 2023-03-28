@@ -10,14 +10,19 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import me.BerylliumOranges.bosses.BossAbstract;
+import me.BerylliumOranges.listeners.purityItems.ItemBuilder;
 import me.BerylliumOranges.listeners.purityItems.traits.PurityItemAbstract;
 import me.BerylliumOranges.misc.MiscItems;
+import me.BerylliumOranges.misc.PotionTraitKey;
 
 public class CommandParser {
 
 	public static boolean findCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		{
 			if (sender instanceof Player && cmd.getName().equalsIgnoreCase("dummy")) {
+				return true;
+			} else if (sender instanceof Player && cmd.getName().equalsIgnoreCase("potions")) {
+				sendPotions((Player) sender);
 				return true;
 			}
 
@@ -32,6 +37,25 @@ public class CommandParser {
 			}
 		}
 		return false;
+	}
+
+	public static void sendPotions(Player p) {
+		boolean found = false;
+		for (PotionTraitKey pot : PurityItemAbstract.effectedEntities) {
+			if (pot.getOwner().equals(p)) {
+				if (!found) {
+					p.sendMessage(ChatColor.GREEN + "Active Potions");
+				}
+				p.sendMessage(" -" + pot.getTrait().getName() + " " + ChatColor.WHITE + ItemBuilder.getTimeInMinutes(pot.getTicksLeft() / 20));
+				for (String s : pot.getTrait().getPotionTraitDescription()) {
+					p.sendMessage("   " + s.substring(0, s.length() - ItemBuilder.getTimeInMinutes(pot.getTrait().getPotionSeconds()).length()));
+				}
+				p.sendMessage("");
+				found = true;
+			}
+		}
+		if (!found)
+			p.sendMessage(ChatColor.RED + "No Active Potions");
 	}
 
 	public static boolean getItems(CommandSender sender, String[] args) {
